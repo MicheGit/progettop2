@@ -11,13 +11,10 @@ Skillset::Skillset(int size, Skillset * copy){
 
 
 /* Construcotr. */
-BaseAbility::BaseAbility(): hasBeenUsed(false){}
 
+bool BaseAbility::getHasBeenUsed() const{ return hasBeenUsed; }
 
-
-BaseAbility::getHasBeenUsed() const{ return hasBeenUsed; }
-
-BaseAbility::setHasBeenUsed(bool &has = true){
+void BaseAbility::setHasBeenUsed(const bool &has){
     hasBeenUsed = has;
 }
 

@@ -12,57 +12,15 @@
 
 
 */
-#ifndef GAMEOBJECT
+#ifndef GAMEOBJECT_H
 #include "gameobject.h"
 #endif
 
-#include<string>
-
-class Skillset {
-    private:
-        class Skill{
-            public:
-                BaseAbility * ability;
-                Skill * next;
-
-                Skill(BaseAbility * one, Skill * next = 0): ability(new BaseAbility(one)), next(next) {}
-                ~Skill();
-        };
-
-        Skill * first; Skill * last;
-
-    public:
-        Skillset(int size = 5, Skillset * copy = 0); // Copia?
-        void learnAbility(BaseAbility * abilityType); // DeepCopy?
-
-        Skill operator[](const int &pos) const{
-            getPosition(first,pos);
-        }
-
-        static Skill * getPosition(Skill * pos, const int index){
-            if(!index)
-                return * pos;
-            find(pos->next, index - 1);
-        }
-
-        class iterator{
-            friend class Skillset;
-            private:
-                Skill * ptr;
-                bool pasTheEnd;
-                iterator(Skill* p, bool pte):
-                    ptr(p), pasTheEnd(pte){}
-            public:
-        }
-
-
-        ~Skillset();
-};
-
+#include<string.h>
 
 /* Abilità di base. Classe astratta. */
 
-class BaseAbility {
+ class BaseAbility {
     private:
         bool hasBeenUsed; // We use an ability max once per turn expect special ones.
     public:
@@ -71,29 +29,29 @@ class BaseAbility {
 
         virtual void useAbility(GameObject * target) = 0;
 
-        virtual static string getName(){
+        virtual static std::string getName(){
             return "BaseAbilityName";
         }
 
         bool getHasBeenUsed() const;
-        void setHasBeenUsed(bool &has = true);
+        void setHasBeenUsed(const bool &has = true);
 
         ~BaseAbility();
 };
 
 /* Abilità di tipo attivo. Classe */
 
-class ActiveAbility : virtual public BaseAbility {
+class ActiveAbility : public virtual BaseAbility {
     private:
         int turniRicarica;
         int costoAzioni; int gittata;
     public:
         ActiveAbility(int cooldown = 0, int cost = 0, int range = 0) :
-            turniRicarica(colldown) , costoAzioni(cost), gittata(range){}
+            turniRicarica(cooldown) , costoAzioni(cost), gittata(range){}
         virtual void useAbility(GameObject * target);
 };
 
-class PassiveAbility : virtual public PassiveAbility{
+class PassiveAbility : public virtual BaseAbility{
 
     public:
         virtual void useAbility(GameObject * target = 0);
@@ -160,5 +118,48 @@ class Push : public ActiveAbility {
         -   Stormo di corvi ( rallenta tutti i nemici in una casella e fa danno
 
 */
+
+
+class Skillset {
+    private:
+        class Skill{
+            public:
+                BaseAbility * ability;
+                Skill * next;
+
+                Skill(BaseAbility * one, Skill * next = 0): ability(new BaseAbility(one)), next(next) {}
+                ~Skill();
+        };
+
+        Skill * first; Skill * last;
+
+    public:
+        Skillset(int size = 5, Skillset * copy = 0); // Copia?
+        void learnAbility(BaseAbility * abilityType); // DeepCopy?
+
+        Skill operator[](const int &pos) const{
+            return *getPosition(first,pos);
+        }
+
+        static Skill * getPosition(Skill * pos, const int index){
+            if(!index)
+                return  pos;
+            return getPosition(pos->next, index - 1);
+        }
+
+        class iterator{
+            friend class Skillset;
+            private:
+                Skill * ptr;
+                bool pasTheEnd;
+                iterator(Skill* p, bool pte):
+                    ptr(p), pasTheEnd(pte){}
+            public:
+        };
+
+
+        ~Skillset();
+};
+
 
 #endif // ABILITACLASSI_H

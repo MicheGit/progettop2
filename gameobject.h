@@ -42,8 +42,7 @@ class Character : public DynamicObject {
 
         bool isDead();
 
-
-        ~Character = 0;
+        virtual ~Character() = 0;
 };
 
 class NPC : public Character{
