@@ -49,3 +49,6 @@ FORMS += \
 SUBDIRS += \
     progettop2.pro \
     ZombieDungeon.pro
+
+DISTFILES += \
+    Idee

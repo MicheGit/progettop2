@@ -1,0 +1,21 @@
+Idea sul modo in cui agisce il "game engine":
+
+1 - (come in zombicide) il turno passa ad ogni giocatore giocante.
+    A fine del turno del giocante applica (scorrendo il vettore di abilità) le passive necessarie
+    metodo virtuale per ogni abilità "endTurn" che fa qualcosa solo se devo applicare qualcosa.
+    ->  Non caro perchè ogni PG ha 5 abilità max e quindi massimo 20 chiamate.
+
+2 - Partono i nemici. "algoritmo" di localizzazione dei percorsi più brevi per andare dai giocatori
+    (caso zombie) fai muovere tutti e in caso attaccare.
+
+
+
+Applicare le abilità:
+
+Le abilità attive per come modellato hanno bisogno di un target nemico ( i danni ad area sono semplicemente
+ad un target e tutti i vicini). Taunt come fai? Uguale selezioni nemico e tutti quelli in area eseguono la ricerca più veloce al target che ha tauntato.
+
+
+Algortimo di ricerca dei percorsi percorribili:
+
+Dipende dalla griglia.
