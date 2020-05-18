@@ -12,6 +12,10 @@
 
 
 */
+#ifndef GAMEOBJECT
+#include "gameobject.h"
+#endif
+
 #include<string>
 
 class Skillset {
@@ -65,7 +69,7 @@ class BaseAbility {
         BaseAbility(bool used = false) :
             hasBeenUsed(used){}
 
-        virtual void useAbility() = 0;
+        virtual void useAbility(GameObject * target) = 0;
 
         virtual static string getName(){
             return "BaseAbilityName";
@@ -86,13 +90,13 @@ class ActiveAbility : virtual public BaseAbility {
     public:
         ActiveAbility(int cooldown = 0, int cost = 0, int range = 0) :
             turniRicarica(colldown) , costoAzioni(cost), gittata(range){}
-        virtual void useAbility();
+        virtual void useAbility(GameObject * target);
 };
 
 class PassiveAbility : virtual public PassiveAbility{
 
     public:
-        virtual void useAbility(Casella Target = 0);
+        virtual void useAbility(GameObject * target = 0);
         ~PassiveAbility();
 };
 
@@ -100,6 +104,7 @@ class PassiveAbility : virtual public PassiveAbility{
 class APAbility : public ActiveAbility, public PassiveAbility {
     public:
         APAbility();
+        virtual void useAbility(GameObject * target = 0);
 };
 
 /* Gives you a bonus shield of 5. */
@@ -111,7 +116,7 @@ class ArmorPlate : public PassiveAbility {
         virtual static string getName(){
             return "Armor Plate";
         }
-        virtual void useAbility(Casella Target = 0);
+        virtual void useAbility(GameObject * target = 0);
 };
 
 /* Restores 1 hp for each enemy killed. */
@@ -120,7 +125,7 @@ class LifeSteal : public PassiveAbility {
         int killedThisTurn;
     public:
         LifeSteal();
-        virtual void useAbility();
+        virtual void useAbility(GameObject * target);
 };
 
 /* Target is feared and won't perform action the coming turn */
@@ -133,7 +138,7 @@ class GhostTouch : public ActiveAbility {
 class Taunt : public ActiveAbility {
     public:
         Taunt();
-        virtual void useAbility();
+        virtual void useAbility(GameObject * target);
 };
 
 /* Moves all enemies to a next cell. */

@@ -37,7 +37,6 @@ SOURCES += \
 HEADERS += \
         mainwindow.h \
     abilitaclassi.h \
-    classeastratta.h \
     gameobject.h \
     linkedlist.h \
     mainwindow.h \
