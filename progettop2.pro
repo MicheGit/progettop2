@@ -32,7 +32,8 @@ SOURCES += \
     linkedlist.cpp \
     main.cpp \
     mainwindow.cpp \
-    terreno.cpp
+    terreno.cpp \
+    casella.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -40,7 +41,8 @@ HEADERS += \
     gameobject.h \
     linkedlist.h \
     mainwindow.h \
-    terreno.h
+    terreno.h \
+    casella.h
 
 FORMS += \
         mainwindow.ui \

@@ -20,14 +20,13 @@
 
 /* Abilità di base. Classe astratta. */
 
- class BaseAbility {
+class BaseAbility {
     private:
         bool hasBeenUsed; // We use an ability max once per turn expect special ones.
     public:
         BaseAbility(bool used = false) :
             hasBeenUsed(used){}
-
-        virtual void useAbility(GameObject * target) = 0;
+        virtual int useAbility(Character * target) = 0;
 
         virtual static std::string getName(){
             return "BaseAbilityName";
@@ -44,17 +43,18 @@
 class ActiveAbility : public virtual BaseAbility {
     private:
         int turniRicarica;
+        // short int turnoAttuale; bool ricarica;  ?
         int costoAzioni; int gittata;
     public:
-        ActiveAbility(int cooldown = 0, int cost = 0, int range = 0) :
-            turniRicarica(cooldown) , costoAzioni(cost), gittata(range){}
-        virtual void useAbility(GameObject * target);
+        ActiveAbility(int cooldown = 0, int cost = 0, int range = 0);
+
+        int getCostoAzioni() const;
+        virtual int useAbility(Character * target) = 0;
 };
 
 class PassiveAbility : public virtual BaseAbility{
-
     public:
-        virtual void useAbility(GameObject * target = 0);
+        virtual int useAbility(Character * target) = 0;
         ~PassiveAbility();
 };
 
@@ -62,7 +62,7 @@ class PassiveAbility : public virtual BaseAbility{
 class APAbility : public ActiveAbility, public PassiveAbility {
     public:
         APAbility();
-        virtual void useAbility(GameObject * target = 0);
+        virtual int useAbility(Character * target = 0);
 };
 
 /* Gives you a bonus shield of 5. */
@@ -71,38 +71,44 @@ class ArmorPlate : public PassiveAbility {
         int bonusArmor;
     public:
         ArmorPlate();
-        virtual static string getName(){
-            return "Armor Plate";
-        }
-        virtual void useAbility(GameObject * target = 0);
+
+        virtual static string getName();
+        virtual int useAbility(Character * target = 0);
 };
 
 /* Restores 1 hp for each enemy killed. */
 class LifeSteal : public PassiveAbility {
     private:
-        int killedThisTurn;
+        short int killedThisTurn;
     public:
         LifeSteal();
-        virtual void useAbility(GameObject * target);
+        virtual static string getName();
+        virtual int useAbility(Character * target);
 };
 
 /* Target is feared and won't perform action the coming turn */
 class GhostTouch : public ActiveAbility {
     public:
         GhostTouch();
+        virtual int useAbility(Character * target);
 };
 
 /* Taunts all targets in a seen cell. */
 class Taunt : public ActiveAbility {
     public:
         Taunt();
-        virtual void useAbility(GameObject * target);
+        virtual int useAbility(Character * target);
 };
 
 /* Moves all enemies to a next cell. */
 class Push : public ActiveAbility {
     public:
         Push();
+};
+
+class Heal: public ActiveAbility{
+    public:
+        Heal();
 };
 
 /*
