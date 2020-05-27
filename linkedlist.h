@@ -682,7 +682,7 @@ typename LinkedList<T>::Iterator LinkedList<T>::erase(LinkedList<T>::Iterator it
 
 template <typename T>
 T LinkedList<T>::pop_back() {
-    Iterator last = end()--;
+    Iterator last = --end();
     T aux = *last;
     erase(last);
     return aux;
@@ -721,5 +721,6 @@ typename LinkedList<T>::ConstIterator LinkedList<T>::end() const {
     return _pastTheEnd;
 }
 
+// TEMPO 4h (0.5 prog., 2 cod., 1.5 test e corr.)
 
 #endif //ZOMBIEDUNGEON_LINKEDLIST_H

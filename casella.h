@@ -85,6 +85,6 @@ public:
     bool isOpen() const;
 };
 
-
+// TEMPO 2h (1 prog., 0.5 cod., 0.5 test.)
 
 #endif //ZOMBIEDUNGEON_CASELLA_H
