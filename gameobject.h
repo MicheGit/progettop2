@@ -35,15 +35,30 @@ class DynamicObject : public GameObject{
 tuttavia gittata di attacco e danno sono relativi a Forza + Arma ? . Dalla quantitò di azioni che può svolgere.*/
 class Character : public DynamicObject {
     private:
-        int HP; int atkDmg;
-        int actionPoints; bool isAlive;
-    public:
-        Character();
+        short int HP; short int currentDmg;
 
+        short int atkDmg;
+
+        short int actionPoints; short int spentPoints;
+
+    public:
+
+        Character(int maxHP = 3, int dmg = 1, int actions = 3);
         bool isDead();
 
+        virtual void getDamaged(const int damage);
+        virtual void spendAction(const int);
 
-        ~Character = 0;
+        virtual short int getCurrentHP() const;
+        virtual short int getMaxHP() const;
+
+        virtual short int getFreeActionPoints() const;
+        virtual short int getAtkDmg() const;
+
+        bool canPerform(ActiveAbility *);
+
+
+        virtual ~Character() = 0;
 };
 
 class NPC : public Character{
