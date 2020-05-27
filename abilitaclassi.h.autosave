@@ -1,17 +1,12 @@
 #ifndef ABILITACLASSI_H
 #define ABILITACLASSI_H
-/*
-    NOTE :
+/* NOTE :
 
         - Da fare iteratore e container. Skillset come container di skills.
 
         - Se nomi delle abilità fossero char * statiche per ogni sottoclasse in fondo?
             Potremmo mettere un nome standard in caso non definito da uno in futuro. Sembra idea buona per risparmiare
-            spazio ma sbagliata concettualmente.
-
-
-
-*/
+            spazio ma sbagliata concettualmente.*/
 #ifndef GAMEOBJECT_H
 #include "gameobject.h"
 #endif
