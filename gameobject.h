@@ -41,6 +41,10 @@ class Character : public DynamicObject {
 
         short int actionPoints; short int spentPoints;
 
+        // Parametri bonus per un solo turno ? :
+
+        short int bonusHP; short int bonusActionPoints;
+
     public:
 
         Character(int maxHP = 3, int dmg = 1, int actions = 3);
@@ -69,11 +73,17 @@ class NPC : public Character{
 };
 
 class Zombie : public NPC {
-    private:
-
     public:
         void moveTowardsNoise() const;
         ~Zombie();
+
+};
+
+class Ghost : public NPC{
+
+};
+
+class Necrom : public NPC{
 
 };
 
