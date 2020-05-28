@@ -4,7 +4,7 @@
 
 #include "casella.h"
 
-void Casella::applyAbilityToAll(void (*ability)(GameObject *)) {
+void Casella::applyEffectToAll(void (*ability)(GameObject *)) {
     for (Ticket i = begin(); i != end(); ++i) {
         ability(*i);
     }

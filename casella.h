@@ -6,7 +6,11 @@
 #define ZOMBIEDUNGEON_CASELLA_H
 
 #include "linkedlist.h"
-#include "gameobject.h"
+
+/**
+ * Dichiarazione incompleta per evitare un import ricorsivo.
+ */
+class GameObject;
 
 class Casella : public LinkedList<GameObject*> {
 public:
@@ -36,7 +40,7 @@ public:
     virtual bool canExit(cost_type) const = 0;
 
     /**
-     * applyAbilityToAll
+     * applyEffectToAll
      *
      * Scorciatoia per applicare un effetto a tutti i GameObject nella casella.
      *
@@ -44,7 +48,9 @@ public:
      *
      * Il parametro deve essere un'abilità con valore di ritorno void e prende un parametro di tipo GameObject*.
      */
-    virtual void applyAbilityToAll(void (*ability)(GameObject*));
+    virtual void applyEffectToAll(void (*ability)(GameObject*));
+
+    virtual ~Casella() = default;
 };
 
 /**
