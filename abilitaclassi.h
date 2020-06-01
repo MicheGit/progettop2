@@ -1,82 +1,214 @@
 #ifndef ABILITACLASSI_H
 #define ABILITACLASSI_H
-/*
-    NOTE :
 
-        - Da fare iteratore e container. Skillset come container di skills.
-
-        - Se nomi delle abilità fossero char * statiche per ogni sottoclasse in fondo?
-            Potremmo mettere un nome standard in caso non definito da uno in futuro. Sembra idea buona per risparmiare
-            spazio ma sbagliata concettualmente.
-
-
-
-*/
 #ifndef GAMEOBJECT_H
 #include "gameobject.h"
 #endif
 
-#include <string.h>
+#include <string>
 
 /* Abilità di base. Classe astratta. */
-
 class BaseAbility {
     private:
-        bool hasBeenUsed; // We use an ability max once per turn expect special ones.
+        bool used;
     public:
-        BaseAbility(bool used = false) : hasBeenUsed(used){}
-        virtual int useAbility(Character * target) = 0;
+        BaseAbility(bool = false);
+        // Restituisce il nome della abilità.
+        static std::string getName();
 
-        virtual static std::string getName();
+        // Uso l'abilità e quindi used = true. O triggero per reset
+        // e l'abilità non è più stata usata.
+        virtual void set();
+        virtual void reset();
 
-        bool getHasBeenUsed() const;
-        void setHasBeenUsed(const bool &has = true);
+        bool getUsed() const;
 
-        ~BaseAbility();
+        virtual short int useAbility(Character *) = 0;
+        virtual ~BaseAbility();
 };
 
 
-/* Abilità di tipo attivo. Classe */
+/* Abilità di tipo attivo.*/
 class ActiveAbility : public virtual BaseAbility {
     private:
-        int turniRicarica;
-        short int turnoAttuale; bool ricarica;
-        int costoAzioni; int gittata;
+        short int cooldown; short int turnoCooldown;
+        // static ? si potrebbe
+        short int costo; short int gittata;
     public:
-        ActiveAbility(int cooldown = 0, int cost = 0, int range = 0);
+        ActiveAbility(short int = 0, short int = 0, short int = 0);
 
-        int getCostoAzioni() const;
+        // Getters.
+        short int getCost() const;
+        short int getGittata() const;
+        // Cooldown. Should not be changeable?
+        short int getCooldown() const;
+        short int getCurrentCooldownTurn() const;
 
-        int consumeAbility();
-        bool abilityUp() const;
+        virtual void reset();
+
+        virtual short int consumeAbility();
         short int nextTurn();
 
-        virtual int useAbility(Character * target) = 0;
+        virtual short int useAbility(Character *) = 0;
+};
+
+// Un'abilità multitarget non si interessa dei target da colpire
+// ma va in cooldown nel momento in cui ha consumato tutti i colpi
+// o dall'esterno non ha più target da colpire.
+class MultiTarget : public ActiveAbility{
+    private:
+        // Il numero di target se = - 1 significa all targets in cell.
+        const short int targets; short int hitCount;
+
+    public:
+        // Eccezzione se i target = 1 o 0 ?
+        MultiTarget(short int = 2, short int = 0, short int = 0, short int = 0);
+
+        short int getTargets() const;
+        short int getCurrentCount() const;
+
+        // Usato su nuovo target, quindi incremento i colpiti.
+        void increaseCount();
+        // Controlla targets - targetCount
+        short int missingTargets();
+        virtual void reset();
+
+        // Se non ci sono più target l'abilità deve andare in cooldownm.
+        void noTargets();
+
+        virtual short int useAbility(Character *) = 0;
+
+        virtual ~MultiTarget();
+};
+
+class SingleTarget : public virtual ActiveAbility{
+    public:
+        SingleTarget(short int = 0, short int = 0, short int = 0);
+        virtual short int useAbility(Character * )= 0;
 };
 
 class PassiveAbility : public virtual BaseAbility{
     public:
-        virtual int useAbility(Character * target) = 0;
+        virtual short int useAbility(Character *) = 0;
         ~PassiveAbility();
 };
 
 
-class APAbility : public ActiveAbility, public PassiveAbility {
+
+/* Srtuttura a diamante. Abilita passive / attive in  multitaregt o
+    single target. */
+
+
+class PassiveActiveS : public SingleTarget, public PassiveAbility {
     public:
-        APAbility();
-        virtual int useAbility(Character * target = 0);
+        PassiveActiveS(short int = 0, short int = 0, short int =0);
+        virtual short int useAbility(Character * ) = 0;
+
+        // Potrebbe non essere una buona idea.
+        virtual short int usePassive(Character *) = 0;
+        virtual short int useActive(Character *) = 0;
 };
+
+class PassiveActiveM : public MultiTarget, public PassiveAbility{
+    public:
+        PassiveActiveM(short int = 2, short int = 0, short int = 0, short int = 0);
+        virtual short int useAbility(Character *) = 0;
+
+        // Potrebbe non essere una buona idea.
+        virtual void usePassive(Character *) = 0;
+        virtual short int useActive(Character *) = 0;
+};
+
+
+
 
 /* Gives you a bonus shield of 5. (5HP for the next turn?) */
-class ArmorPlate : public PassiveAbility {
+class ArmorPlate : public SingleTarget {
     private:
-        int bonusArmor;
+       short int bonusHealth;
     public:
-        ArmorPlate();
+        ArmorPlate(short int = 4);
 
-        virtual static string getName();
-        virtual int useAbility(Character * target);
+        static std::string getName();
+        virtual short int useAbility(Character * target);
 };
+
+
+
+/*
+ *      Questione Armi:
+ *
+ *
+ *
+ *  Gestiamo la questione delle armi qui nelle abilità. Un giocatore
+    può avere come abilità un'arma che passivamente gli da qualche
+    caratteristica su colpo.
+
+    Lista atttuale:
+        - arco  : bonus range base atk : 2
+        - balestra : bonus range base atk : 2, danno : 1
+        - ascia     : bonus colpo
+        - martello : colpi atk bonus, attiva: danno ad area in casella.
+        - bastone magico : bonus lancio incantesimi sui danni + speel bonus?
+        - canna da pesca    : range 2, sposta il nemico in casella corrente.
+
+*/
+
+// Arco, permette di attaccare a distanza.
+class Bow : public PassiveAbility{
+    private:
+        short int maxRange;
+    public:
+        Bow(short int = 2, short int = 0, short int = 0, short int = 0);
+        short int retRange();
+
+        virtual short int useAbility(Character * target);
+};
+
+class Martello : public PassiveActiveM{
+    private:
+        short int bonusDmg;
+    public:
+        Martello(short int = 0);
+        short int getBonusDmg() const;
+
+        virtual short useAbility(Character *);
+};
+
+// Infliggi più danni e una volta per turno puoi sferrare un colpo
+//  ad area che infligge tutti i target vicini.
+class Axe : public PassiveActiveM{
+    private:
+        int bonusDamage;
+    public:
+        virtual short useAbility(Character *);
+};
+
+
+/* Abilità che infliggono danni danno un bonus di danno.(parametro nel
+    character) e in più è possibile infliggere danni a distanza.*/
+class Bastone : public PassiveAbility{
+    private:
+        short int bonusDamage; // Su spell.
+        short int bonusRange; // attacco a distanza.
+    public:
+
+        Bastone(short int = 0, short int = 1);
+
+        // Incanta le proprie abilità dando un modificatore bonus
+        // di danni sulle spell che infiglggonod danni. Target è self.
+        // Avremo campo "danniBonusLancio".
+        virtual short int useAbility(Character *);
+
+};
+
+
+    /*Inzio abilità. Lista:
+     *
+     *
+     *
+
+        */
 
 /* Restores 1 hp for each enemy killed. */
 class LifeSteal : public PassiveAbility {
@@ -84,42 +216,34 @@ class LifeSteal : public PassiveAbility {
         short int killedThisTurn;
     public:
         LifeSteal();
-        virtual static string getName();
-        virtual int useAbility(Character * target);
+        static std::string getName();
+        virtual short int useAbility(Character * target);
 };
 
 /* Target is feared and won't perform action the coming turn */
-class GhostTouch : public ActiveAbility {
+class GhostTouch : public SingleTarget {
     public:
         GhostTouch();
-        virtual int useAbility(Character * target);
+        virtual short int useAbility(Character * target);
 };
 
 /* Taunts all targets in a seen cell. */
-class Taunt : public ActiveAbility {
+class Taunt : public MultiTarget {
     public:
         Taunt();
-        virtual int useAbility(Character * target);
+        virtual short int useAbility(Character * target);
 };
 
 /* Moves all enemies to a next cell. */
-class Push : public ActiveAbility {
+class Push : public MultiTarget {
     public:
         Push();
 };
 
-class Heal: public ActiveAbility{
+class Heal: public SingleTarget{
     public:
         Heal();
 };
-
-/*  SKILLS IDEAS:
-        -   Cometa Arcana
-        -   Scan (vedi la vita dei nemici)
-        -   Cura
-        -   Scudo magioc
-        -   Stormo di corvi  VECCHIA E DI FIDDLE ( rallenta tutti i nemici in una casella e fa danno*/
-
 
 class Skillset {
     private:

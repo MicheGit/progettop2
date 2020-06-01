@@ -36,13 +36,11 @@ tuttavia gittata di attacco e danno sono relativi a Forza + Arma ? . Dalla quant
 class Character : public DynamicObject {
     private:
         short int HP; short int currentDmg;
-
         short int atkDmg;
 
         short int actionPoints; short int spentPoints;
 
         // Parametri bonus per un solo turno ? :
-
         short int bonusHP; short int bonusActionPoints;
 
     public:
@@ -61,7 +59,6 @@ class Character : public DynamicObject {
 
         bool canPerform(ActiveAbility *);
 
-
         virtual ~Character() = 0;
 };
 
@@ -74,7 +71,6 @@ class NPC : public Character{
 
 class Zombie : public NPC {
     public:
-        void moveTowardsNoise() const;
         ~Zombie();
 
 };
