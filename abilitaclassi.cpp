@@ -1,75 +1,140 @@
 
     #include "abilitaclassi.h"
 
+    BaseAbility::BaseAbility(bool has) : used(has){}
 
-    Skillset::Skill::~Skill(){
-        delete next; delete ability;
+    std::string BaseAbility::getName(){
+        return "baseabilityname";
     }
 
-    Skillset::Skillset(int size, Skillset * copy){}
-
-    bool BaseAbility::getHasBeenUsed() const{
-        return hasBeenUsed;
+    void BaseAbility::set(){
+        used = true;
     }
 
-    static std::string BaseAbility::getName(){
-        return "BaseAbilityName";
+    void BaseAbility::reset(){
+        used = false;
     }
 
-    void BaseAbility::setHasBeenUsed(const bool &has){
-        hasBeenUsed = has;
+    bool BaseAbility::getUsed() const{
+        return used;
     }
 
-    ActiveAbility::ActiveAbility(int cooldown, int cost, int range):
-    turniRicarica(cooldown) , costoAzioni(cost), gittata(range){}
-
-    int ActiveAbility::getCostoAzioni() const{
-        return costoAzioni;
+    // Costruisce l'oggetto BaseAbility da cui deriva e assegna coolwon costo e range.
+    ActiveAbility::ActiveAbility(
+        short int setCooldown, short int cost, short int range):
+        cooldown(setCooldown), costo(cost), gittata(range){
+            turnoCooldown = 0;
     }
 
-    void ActiveAbility::consumeAbility() const{
-        ricarica = true; turnoAttuale = 0;
+    short int ActiveAbility::getCost() const{
+        return costo;
     }
 
-    bool ActiveAbility::abilityUp(){
-        return turnoAttuale == turniRicarica || !ricarica;
+    short int ActiveAbility::getGittata() const{
+        return gittata;
     }
-    /* Potrebbe non essere un metodo della struttura ma del controller.*/
+
+    short int ActiveAbility::getCooldown() const{
+        return cooldown;
+    }
+
+    short int ActiveAbility::getCurrentCooldownTurn() const{
+        return turnoCooldown;
+    }
+
+    void ActiveAbility::reset(){
+        BaseAbility::reset();
+        turnoCooldown = 0;
+    }
+
+    short int ActiveAbility::consumeAbility(){
+    /* Non posso consumare un'abilità già stata consumata.*/
+        if(getUsed())
+            return -1;
+
+        set();
+
+        return costo;
+    }
+    /* Passa al turno dopo. Ritorna quanti turni di cooldown siamo.
+     * Se 0 allora ha finito il cooldown.*/
     short int ActiveAbility::nextTurn(){
-        if(!abilityUp())
-            turnoAttuale++;
-        else {
-            turnoAttuale = 0;
-            ricarica = false;
-        }
-        // Torna i turni restanti.
-        return turniRicarica - turnoAttuale;
+        if(cooldown == turnoCooldown)
+            reset();
+        else
+            turnoCooldown ++;
+        return turnoCooldown;
     }
+
+
+
+    /* Multitarget . */
+
+    MultiTarget::MultiTarget(short int noTargets, short int setCooldown, short int cost, short int range)
+    :ActiveAbility(setCooldown, cost, range),targets(noTargets){
+        hitCount = 0;
+    }
+
+    short int MultiTarget::getTargets() const{
+        return targets;
+    }
+
+    short int MultiTarget::getCurrentCount() const{
+        return hitCount;
+    }
+
+    // Incremento il conteggio dei target colpiti. Dovessero essere
+    // il numero di target totali colpibili metto l'abilità in cooldown.
+    void MultiTarget::increaseCount(){
+        if(hitCount != targets)
+            hitCount++;
+        else
+            set();
+    }
+
+    short int MultiTarget::missingTargets(){
+        return targets - hitCount;
+    }
+
+    void MultiTarget::reset(){
+        ActiveAbility::reset();
+        hitCount = 0;
+    }
+
+    void MultiTarget::noTargets(){
+        set();
+    }
+
+    SingleTarget::SingleTarget(short int setCooldown, short int cost , short int range)
+        :ActiveAbility(setCooldown, cost, range){}
+
 
     PassiveAbility::~PassiveAbility(){
 
     }
 
-
-    ArmorPlate::ArmorPlate(){
-
-    }
-
-    int ArmorPlate::useAbility(Character * target){
+    /* Armor Plate è una abilità attiva che per il prossimo turno
+        aumenta la vita bonus di 4 + %mod% (armatura).*/
+    ArmorPlate::ArmorPlate(short int bonus):
+        SingleTarget(3,2,0), bonusHealth(bonus){
 
     }
 
+    std::string ArmorPlate::getName(){
+        return "Armor Plate";
+    }
 
-    static string ArmorPlate::getName(){
+
+    short int ArmorPlate::useAbility(Character * target){
+        return getCost();
+    }
+
+    std::string ArmorPlate::getName(){
         return "Armor plate";
     }
 
-    int ArmorPlate::useAbility(Character * target){
-
-    }
-
     /* 1 Hp point for each killed enemy.  (every 2 should be better) */
-    int LifeSteal::useAbility(Character * target){
+    short int LifeSteal::useAbility(Character * target){
 
         int maxHp = target ->getMaxHp();
 
@@ -85,7 +150,7 @@
         return "Life Steal";
     }
 
-    int GhostTouch::useAbility(Character * target){
+    short int GhostTouch::useAbility(Character * target){
         target->spendAction(target->getFreeActionPoints());
 
         setHasBeenUsed(true);
