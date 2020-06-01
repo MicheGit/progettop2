@@ -88,7 +88,7 @@ private:
     };
 
     Node * _first;
-    Node * const _pastTheEnd;
+    Node * _pastTheEnd;
     size_type _size;
 
 public:
@@ -565,7 +565,7 @@ LinkedList<T>::LinkedList(size_type dim, T sample)
 
 template <typename T>
 LinkedList<T>::LinkedList(const LinkedList<T> & other)
-    : _first(new Node(*other._first)), _size(other._size) {
+: _first(new Node(*other._first)), _size(other._size) {
         _pastTheEnd = _first;
     while (_pastTheEnd->next != _pastTheEnd) {
         _pastTheEnd = _pastTheEnd->next;

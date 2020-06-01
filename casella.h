@@ -6,6 +6,7 @@
 #define ZOMBIEDUNGEON_CASELLA_H
 
 #include "linkedlist.h"
+#include "custom_types.h"
 
 /**
  * Dichiarazione incompleta per evitare un import ricorsivo.
@@ -19,7 +20,7 @@ public:
      *
      * Tipo dei costi per attraversale una casella. Corrisponde a unsigned short.
      */
-    typedef unsigned short cost_type;
+    typedef ushort cost_type;
     /**
      * Ticket
      *
@@ -50,6 +51,28 @@ public:
      */
     virtual void applyEffectToAll(void (*ability)(GameObject*));
 
+    /**
+     * Metodo di copia polimorfa
+     *
+     *
+     * @return una copia dell'oggetto
+     */
+    virtual Casella* copy() const = 0;
+
+    /**
+     * Metodo per ottenere il costo di entrata in sola lettura
+     *
+     * @return
+     */
+    virtual cost_type getCostoEntrata() const = 0;
+
+    /**
+     * Metodo per ottenere il costo di uscita in sola lettura
+     *
+     * @return
+     */
+    virtual cost_type getCostoUscita() const = 0;
+
     virtual ~Casella() = default;
 };
 
@@ -65,6 +88,10 @@ public:
     static const cost_type costoUscita = 0;
     bool canEnter(cost_type) const;
     bool canExit(cost_type) const;
+    cost_type getCostoEntrata() const override;
+    cost_type getCostoUscita() const override;
+
+    Pianura * copy() const;
 };
 
 class Palude : public Casella {
@@ -73,6 +100,9 @@ public:
     static const cost_type costoUscita = 1;
     bool canEnter(cost_type) const;
     bool canExit(cost_type) const;
+    cost_type getCostoEntrata() const override;
+    cost_type getCostoUscita() const override;
+    Palude * copy() const;
 };
 
 class Muro : public Casella {
@@ -80,6 +110,9 @@ public:
     static const cost_type costoUscita = 0;
     bool canEnter(cost_type) const;
     bool canExit(cost_type) const;
+    cost_type getCostoEntrata() const override;
+    cost_type getCostoUscita() const override;
+    Muro * copy() const;
 };
 
 class Porta : public Pianura {
@@ -89,6 +122,11 @@ public:
     bool canEnter(cost_type) const;
     void open();
     bool isOpen() const;
+
+    cost_type getCostoEntrata() const override;
+    cost_type getCostoUscita() const override;
+
+    Porta * copy() const;
 };
 
 // TEMPO 2h (1 prog., 0.5 cod., 0.5 test.)
