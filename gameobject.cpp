@@ -1,63 +1,110 @@
-    #include "gameobject.h"
+//
+// Created by chrim on 28/05/2020.
+//
 
-    bool Character::isDead(){
-        return ( HP - currentDmg ) <= 0;
+#include "gameobject.h"
+
+GameObject::GameObject(Mappa * map, ushort x, ushort y)
+: _map(map), _position(map->getCasella(x, y)) {
+    if (_position) {
+        _ticket = _position->push_back(this);
+    } else {
+        // TODO error
+    }
+}
+
+GameObject::GameObject(const GameObject& other)
+: _map(other._map), _position(other._position) {
+    _ticket = _position->push_back(this);
+}
+
+GameObject& GameObject::operator=(const GameObject & other) {
+    if (this != &other) {
+        _position->erase(_ticket);
+        _map = other._map;
+        _position = other._position;
+        _ticket = _position->push_back(this);
+    }
+    return *this;
+}
+
+GameObject::~GameObject() {
+    _position->erase(_ticket);
+};
+
+AnimateObject::AnimateObject(Mappa * map, ushort x, ushort y, ushort actions)
+: _maxActions(actions), _currentActions(actions), GameObject(map, x, y) {}
+
+Casella::Ticket AnimateObject::move(Casella * target) {
+    if (_position->canExit(_currentActions) && target->canEnter(_currentActions - _position->getCostoUscita())) {
+        _position->erase(_ticket);
+        _currentActions -= _position->getCostoUscita();
+        _position = target;
+        _currentActions -= _position->getCostoEntrata();
+        _ticket = _position->push_back(this);
+    } else {
+        // TODO recoverable error
     }
 
-    Character::Character(int maxHP, int dmg, int actions):
-        HP(maxHP), atkDmg(dmg), actionPoints(actions),
-        currentDmg(0), spentPoints(0) {}
+    return _ticket;
+}
 
-    // Getters.
+ushort AnimateObject::getMaxActions() const {
+    return _maxActions;
+}
 
-    short int Character::getCurrentHP() const{
-        return HP - currentDmg;
+ushort AnimateObject::getCurrentActions() const {
+    return _currentActions;
+}
+
+void AnimateObject::resetTurn() {
+    _currentActions = _maxActions;
+}
+
+tupla<ushort, tupla<ushort, Casella*>*> AnimateObject::getCaselleRaggiungibili() const {
+    return _map->dijkstra(_position, _currentActions);
+}
+
+Character::Character(Mappa * map, ushort x, ushort y, ushort actions, ushort hp, ushort strength)
+: _baseStrength(strength), _maxHp(hp), _currentHp(hp), AnimateObject(map, x, y, actions) {
+
+}
+
+ushort Character::getMaxHp() const {
+    return _maxHp;
+}
+
+ushort Character::getCurrentHp() const {
+    return _currentHp;
+}
+
+ushort Character::getStrength() const {
+    return _baseStrength;
+}
+
+void Character::dealDamageOrHeal(short modifier) {
+    if (_currentHp + modifier > _maxHp) {
+        _currentHp = _maxHp;
+    } else if (_currentHp < - modifier) {
+        _currentHp = 0;
+    } else {
+        _currentHp += modifier;
     }
+}
 
-    short int Character::getMaxHP() const{
-        return HP;
-    }
+bool Character::isDead() const {
+    return _currentHp == 0;
+}
 
-    short int Character::getFreeActionPoints() const{
-        return actionPoints - spentPoints;
-    }
+void Character::basicAttack(Character * enemy) const {
+    enemy->dealDamage(getStrength());
+}
 
-    short int Character::getAtkDmg() const{
-        return atkDmg;
-    }
+void Character::dealDamage(ushort damage) {
+    dealDamageOrHeal(-damage);
+}
 
-    // Setters
-
-    /* Un personaggio che riceve danno negativo viene guarito del
-        massimo di punti guaribili portando danni a 0.*/
-    void Character::getDamaged(const int damage){
-        if(currentDmg + damage > HP)
-            currentDmg = HP;
-        else if(currentDmg + damage < 0)
-            currentDmg = 0;
-        else
-            currentDmg += damage;
-    }
-
-    void Character::spendAction(const int spent){
-        spentPoints += spent;
-    }
-
-    bool canPerform(ActiveAbility * ability){
-        return ability->getCostoAzioni() + spentPoints <= actionPoints;
-    }
-
-
-    int PC::getLeveL() const{
-        /* Sarò necessaria griglia di conversione per livello?*/
-        return experience / 1024;
-    }
-
-    int PC::addExperience(int exp){
-        experience += exp;
-    }
-
-
-
-/* A dead player may be revived. */
+void Character::dealHeal(ushort heal) {
+    dealDamageOrHeal(heal);
+}
 

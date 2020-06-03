@@ -23,7 +23,7 @@ Casella *& Mappa::getCasella(size_type x, size_type y) const {
     return _map[x + y * _width];
 }
 
-tupla<ushort, Casella *> * Mappa::dijkstra(ushort start, ushort limit) const {
+tupla<ushort, tupla<ushort, Casella *> *> Mappa::dijkstra(ushort start, ushort limit) const {
 
 
     // init
@@ -278,8 +278,19 @@ tupla<ushort, Casella *> * Mappa::dijkstra(ushort start, ushort limit) const {
         }
     }
 
-    return memory;
+    return {nodes_number, memory};
 
+}
+
+tupla<ushort, tupla<ushort, Casella *> *> Mappa::dijkstra(Casella * start, ushort limit) const {
+    ushort i = 0;
+    while (_map[i] != start) {
+        ++i;
+        if (i >= _width * _height) {
+            // TODO error
+        }
+    }
+    return dijkstra(i, limit);
 }
 
 tupla<ushort, Casella *> * Mappa::test_init_dijkstra(std::stringstream & log, ushort start, ushort limit) const {
