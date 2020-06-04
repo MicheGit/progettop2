@@ -37,7 +37,9 @@ public:
      * @param limit: ushort default = -1, punti movimento disponibii
      * @return
      */
-    tupla<ushort, Casella *> * dijkstra(ushort, ushort = -1) const;
+    tupla<ushort, tupla<ushort, Casella *>*> dijkstra(ushort, ushort = -1) const;
+
+    tupla<ushort, tupla<ushort, Casella *>*> dijkstra(Casella *, ushort = -1) const;
 
     tupla<ushort, Casella *> * test_init_dijkstra(std::stringstream&, ushort, ushort = -1) const;
 };
