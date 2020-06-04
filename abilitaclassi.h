@@ -270,46 +270,5 @@ class Heal: public SingleTarget{
         static bool checkAlly(PC * target);
 };
 
-class Skillset {
-    private:
-        class Skill{
-            public:
-                BaseAbility * ability;
-                Skill * next;
-
-                Skill(BaseAbility * one, Skill * next = 0): ability(new BaseAbility(one)), next(next) {}
-                ~Skill();
-        };
-
-        Skill * first; Skill * last;
-
-    public:
-        Skillset(int size = 5, Skillset * copy = 0); // Copia?
-        void learnAbility(BaseAbility * abilityType); // DeepCopy?
-
-        Skill operator[](const int &pos) const{
-            return *getPosition(first,pos);
-        }
-
-        static Skill * getPosition(Skill * pos, const int index){
-            if(!index)
-                return  pos;
-            return getPosition(pos->next, index - 1);
-        }
-
-        class iterator{
-            friend class Skillset;
-            private:
-                Skill * ptr;
-                bool pasTheEnd;
-                iterator(Skill* p, bool pte):
-                    ptr(p), pasTheEnd(pte){}
-            public:
-        };
-
-
-        ~Skillset();
-};
-
 
 #endif // ABILITACLASSI_H
