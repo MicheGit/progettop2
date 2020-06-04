@@ -42,7 +42,8 @@ HEADERS += \
     linkedlist.h \
     mainwindow.h \
     terreno.h \
-    casella.h
+    casella.h \
+    array.h
 
 FORMS += \
         mainwindow.ui \

@@ -105,7 +105,7 @@ class PassiveActiveS : public SingleTarget, public PassiveAbility {
         virtual short int useAbility(Character * ) = 0;
 
         // Potrebbe non essere una buona idea.
-        virtual short int usePassive(Character *) = 0;
+        virtual short int applyPassive(Character *) = 0;
         virtual short int useActive(Character *) = 0;
 };
 
@@ -115,14 +115,15 @@ class PassiveActiveM : public MultiTarget, public PassiveAbility{
         virtual short int useAbility(Character *) = 0;
 
         // Potrebbe non essere una buona idea.
-        virtual void usePassive(Character *) = 0;
+        virtual void applyPassive(Character *) = 0;
         virtual short int useActive(Character *) = 0;
 };
 
 
 
 
-/* Gives you a bonus shield of 5. (5HP for the next turn?) */
+/* Gives you a bonus shield of 5. (5HP for the next turn?)
+    target -> SELF .*/
 class ArmorPlate : public SingleTarget {
     private:
        short int bonusHealth;
@@ -155,12 +156,26 @@ class ArmorPlate : public SingleTarget {
 */
 
 // Arco, permette di attaccare a distanza.
-class Bow : public PassiveAbility{
+class Arco : public PassiveAbility{
     private:
-        short int maxRange;
+        const short int maxRange;
     public:
-        Bow(short int = 2, short int = 0, short int = 0, short int = 0);
-        short int retRange();
+        Arco(short int = 2, short int = 0, short int = 0, short int = 0);
+        short int getRange() const;
+
+        static std::string getName() const;
+
+        virtual short int useAbility(Character * target);
+};
+
+class Balestra: public PassiveAbility{
+    private:
+        const short int maxRange; const short int bonusDmg;
+    public:
+        Balestra(short int = 1, short int = 1, short int = 0, short int = 0, short int = 0);
+        short int getMaxRange() const;
+
+        static std::string getName() const;
 
         virtual short int useAbility(Character * target);
 };
@@ -237,12 +252,22 @@ class Taunt : public MultiTarget {
 /* Moves all enemies to a next cell. */
 class Push : public MultiTarget {
     public:
-        Push();
+        Push(short int = -1, short int = 0, short int = 0, short int = 0);
+        virtual short int useAbility(Character * target);
 };
 
+
+/* Heals ally target. (potremmo fare che puo curare chiunque) */
 class Heal: public SingleTarget{
+    private:
+        short int heal;
     public:
-        Heal();
+        Heal(const short int = 0, const short int = 2, const short int = 2, const short int =1);
+
+        // virtual bool canThrow();
+
+        virtual short int useAbility(Character * target);
+        static bool checkAlly(PC * target);
 };
 
 class Skillset {

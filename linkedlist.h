@@ -71,7 +71,7 @@ private:
          */
         Node(const Node &);
 
-        /***
+        /**
          * Assegnazione
          *
          * Esegue una copia profonda del nodo parametro e l'assegna al nodo origine.
@@ -79,7 +79,7 @@ private:
          */
         LinkedList<T>::Node &operator=(const Node &);
 
-        /***
+        /**
          * Distruttore profondo
          *
          * Elimina il nodo corrente e distrugge la lista `next`.
@@ -93,12 +93,10 @@ private:
 
 public:
 
-    /***
+    /**
      * Classe ConstIterator
      *
-     * Rappresenta un iteratore utilizzabile per scorrere gli elementi della lista. Trattandosi di una lista
-     *  unidirezionale, l'iteratore può solo essere incrementato. Gli elementi ai quali viene fatto puntare non sono
-     *  modificabili
+     * Rappresenta un iteratore utilizzabile per scorrere gli elementi di una lista immutabile.
      */
     class ConstIterator {
         friend class LinkedList<T>;
@@ -148,20 +146,20 @@ public:
         /**
          * Operatore di dereferenziazione
          *
-         * Se l'iteratore era PastTheEnd lancia un'eccezione di tipo LinkedList::Error.
+         * Se l'iteratore era PastTheEnd lancia un'eccezione.
          *
          * @return l'elemento puntato per riferimento.
          */
-        virtual const T &operator*() const;
+        const T &operator*() const;
 
         /**
          * Operatore di dereferenziazione e accesso
          *
          * Invoca un metodo o cerca di accedere a un campo dati nell'elemento puntato.
          *
-         * Se l'iteratore era PastTheEnd lancia un'eccezione di tipo LinkedList::Error.
+         * Se l'iteratore era PastTheEnd lancia un'eccezione.
          */
-        virtual const T *operator->() const;
+        const T *operator->() const;
 
         /**
          * Operatore di incremento prefisso
@@ -206,16 +204,13 @@ public:
         ConstIterator operator--(int);
     };
 
-    /***
+    /**
      * Classe Iterator
      *
-     * Rappresenta un iteratore utilizzabile per scorrere gli elementi della lista. Trattandosi di una lista
-     *  unidirezionale, l'iteratore può solo essere incrementato.
+     * Rappresenta un iteratore utilizzabile per scorrere gli elementi della lista.
      *
      * Il funzionamento è lo stesso di un ConstIterator, l'unica differenza starà nel tipo di ritorno dei metodi di
      *  dereferenziazione.
-     *
-     * È, inoltre, convertibile automaticamente in un ConstIterator.
      *
      */
     class Iterator {
@@ -235,23 +230,29 @@ public:
 
         T *operator->() const;
 
+        /**
+        * Operatore di incremento prefisso
+        *
+        * @return l'iteratore stesso dopo la modifica.
+        */
         Iterator &operator++();
 
         /**
-         * Operatore di incremento
-         *
-         * Overload dell'operatore di incremento di ConstIterator.
+         * Operatore di incremento postfisso
          *
          * @return un Iterator che punta all'elemento precedente.
          */
         Iterator operator++(int);
 
+        /**
+        * Operatore di decremento prefisso
+        *
+        * @return l'iteratore stesso dopo la modifica.
+        */
         Iterator &operator--();
 
         /**
-         * Operatore di incremento
-         *
-         * Overload dell'operatore di incremento di ConstIterator.
+         * Operatore di decremento postfisso
          *
          * @return un Iterator che punta all'elemento precedente.
          */
@@ -266,7 +267,7 @@ public:
      */
     LinkedList(size_type = 0);
 
-    /***
+    /**
      * Costruttore
      *
      * Crea una lista con `n` elementi copie dell'elemento `t`.
@@ -274,21 +275,21 @@ public:
      */
     LinkedList(size_type, T);
 
-    /***
+    /**
      * Costruttore di copia profonda
      *
      * Costruisce una lista duplicando gli elementi della sorgente.
      */
     LinkedList(const LinkedList<T> &);
 
-    /***
+    /**
      * Assegnazione profonda
      *
      * Elimina gli elementi della lista e la riempie con copie della lista sorgente.
      */
     LinkedList<T> &operator=(const LinkedList<T> &);
 
-    /***
+    /**
      * Distruzione profonda
      *
      * Elimina gli elementi della lista.
@@ -724,3 +725,5 @@ typename LinkedList<T>::ConstIterator LinkedList<T>::end() const {
 // TEMPO 4h (0.5 prog., 2 cod., 1.5 test e corr.)
 
 #endif //ZOMBIEDUNGEON_LINKEDLIST_H
+
+

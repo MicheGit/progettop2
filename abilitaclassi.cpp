@@ -159,3 +159,18 @@
     }
 
 
+
+    Heal::Heal(const short int points, const short int setCooldown,
+         const short int cost, const short int range)
+        : SingleTarget(setCooldown, cost, range),heal(points){}
+
+    /* Gli alleati sono i target di tipo Playing Character.*/
+    bool checkAlly(Character * target){
+        return dynamic_cast<PC*>(target);
+    }
+
+    short int useAbility(Character * target){
+        if(checkAlly(target))
+            return 1;
+    }
+
