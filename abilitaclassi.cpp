@@ -20,9 +20,10 @@
     }
 
     // Costruisce l'oggetto BaseAbility da cui deriva e assegna coolwon costo e range.
-    ActiveAbility::ActiveAbility(
+    ActiveAbility::ActiveAbility( short int _targets,
         short int setCooldown, short int cost, short int range):
-        cooldown(setCooldown), costo(cost), gittata(range){
+        targets(_targets), cooldown(setCooldown),
+        costo(cost), gittata(range){
             turnoCooldown = 0;
     }
 
@@ -44,7 +45,7 @@
 
     void ActiveAbility::reset(){
         BaseAbility::reset();
-        turnoCooldown = 0;
+        turnoCooldown = 0; hitCount = 0;
     }
 
     short int ActiveAbility::consumeAbility(){
@@ -75,39 +76,26 @@
         hitCount = 0;
     }
 
-    short int MultiTarget::getTargets() const{
+    short int ActiveAbility::getTargets() const{
         return targets;
     }
 
-    short int MultiTarget::getCurrentCount() const{
+    short int ActiveAbility::getCurrentCount() const{
         return hitCount;
     }
 
     // Incremento il conteggio dei target colpiti. Dovessero essere
     // il numero di target totali colpibili metto l'abilità in cooldown.
-    void MultiTarget::increaseCount(){
+    void ActiveAbility::increaseCount(){
         if(hitCount != targets)
             hitCount++;
         else
             set();
     }
 
-    short int MultiTarget::missingTargets(){
+    short int ActiveAbility::missingTargets(){
         return targets - hitCount;
     }
-
-    void MultiTarget::reset(){
-        ActiveAbility::reset();
-        hitCount = 0;
-    }
-
-    void MultiTarget::noTargets(){
-        set();
-    }
-
-    SingleTarget::SingleTarget(short int setCooldown, short int cost , short int range)
-        :ActiveAbility(setCooldown, cost, range){}
-
 
     PassiveAbility::~PassiveAbility(){
 
@@ -166,7 +154,7 @@
 
     /* Gli alleati sono i target di tipo Playing Character.*/
     bool checkAlly(Character * target){
-        return dynamic_cast<PC*>(target);
+        return dynamic_cast<Player*>(target);
     }
 
     short int useAbility(Character * target){

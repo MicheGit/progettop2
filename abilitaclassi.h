@@ -1,3 +1,11 @@
+
+/*
+    Al posto di Character * userò una
+    const GoodArray<Character*>& così da
+    risolvere single-target multi-target.
+*/
+
+
 #ifndef ABILITACLASSI_H
 #define ABILITACLASSI_H
 
@@ -6,6 +14,10 @@
 #endif
 
 #include <string>
+
+#ifndef ARRAY_H
+#include "array.h"
+#endif
 
 /* Abilità di base. Classe astratta. */
 class BaseAbility {
@@ -23,7 +35,7 @@ class BaseAbility {
 
         bool getUsed() const;
 
-        virtual short int useAbility(Character *) = 0;
+        virtual short int useAbility(const GoodArray<Character*>&) = 0;
         virtual ~BaseAbility();
 };
 
@@ -34,8 +46,12 @@ class ActiveAbility : public virtual BaseAbility {
         short int cooldown; short int turnoCooldown;
         // static ? si potrebbe
         short int costo; short int gittata;
+
+        // Multitarget properties
+        const short int targets; short int hitCount;
+
     public:
-        ActiveAbility(short int = 0, short int = 0, short int = 0);
+        ActiveAbility(short int = 1, short int = 0, short int = 0, short int = 0);
 
         // Getters.
         short int getCost() const;
@@ -49,47 +65,28 @@ class ActiveAbility : public virtual BaseAbility {
         virtual short int consumeAbility();
         short int nextTurn();
 
-        virtual short int useAbility(Character *) = 0;
-};
 
-// Un'abilità multitarget non si interessa dei target da colpire
-// ma va in cooldown nel momento in cui ha consumato tutti i colpi
-// o dall'esterno non ha più target da colpire.
-class MultiTarget : public ActiveAbility{
-    private:
-        // Il numero di target se = - 1 significa all targets in cell.
-        const short int targets; short int hitCount;
-
-    public:
-        // Eccezzione se i target = 1 o 0 ?
-        MultiTarget(short int = 2, short int = 0, short int = 0, short int = 0);
-
+        /* Multitarget properties */
         short int getTargets() const;
         short int getCurrentCount() const;
 
         // Usato su nuovo target, quindi incremento i colpiti.
         void increaseCount();
-        // Controlla targets - targetCount
         short int missingTargets();
-        virtual void reset();
-
         // Se non ci sono più target l'abilità deve andare in cooldownm.
         void noTargets();
 
-        virtual short int useAbility(Character *) = 0;
 
-        virtual ~MultiTarget();
+        virtual short int useAbility(const GoodArray<Character*>&) = 0;
 };
 
-class SingleTarget : public virtual ActiveAbility{
-    public:
-        SingleTarget(short int = 0, short int = 0, short int = 0);
-        virtual short int useAbility(Character * )= 0;
-};
+// Un'abilità multitarget non si interessa dei target da colpire
+// ma va in cooldown nel momento in cui ha consumato tutti i colpi
+// o dall'esterno non ha più target da colpire.
 
 class PassiveAbility : public virtual BaseAbility{
     public:
-        virtual short int useAbility(Character *) = 0;
+        virtual short int useAbility(const GoodArray<Character*>&) = 0;
         ~PassiveAbility();
 };
 
@@ -99,39 +96,28 @@ class PassiveAbility : public virtual BaseAbility{
     single target. */
 
 
-class PassiveActiveS : public SingleTarget, public PassiveAbility {
+class PassiveActive : public ActiveAbility, public PassiveAbility {
     public:
-        PassiveActiveS(short int = 0, short int = 0, short int =0);
-        virtual short int useAbility(Character * ) = 0;
+        PassiveActive(short int = 1,short int = 0, short int = 0, short int =0);
+        virtual short int useAbility(const GoodArray<Character*>&) = 0;
 
         // Potrebbe non essere una buona idea.
         virtual short int applyPassive(Character *) = 0;
         virtual short int useActive(Character *) = 0;
 };
 
-class PassiveActiveM : public MultiTarget, public PassiveAbility{
-    public:
-        PassiveActiveM(short int = 2, short int = 0, short int = 0, short int = 0);
-        virtual short int useAbility(Character *) = 0;
-
-        // Potrebbe non essere una buona idea.
-        virtual void applyPassive(Character *) = 0;
-        virtual short int useActive(Character *) = 0;
-};
-
-
 
 
 /* Gives you a bonus shield of 5. (5HP for the next turn?)
     target -> SELF .*/
-class ArmorPlate : public SingleTarget {
+class ArmorPlate : public ActiveAbility {
     private:
        short int bonusHealth;
     public:
         ArmorPlate(short int = 4);
 
         static std::string getName();
-        virtual short int useAbility(Character * target);
+        virtual short int useAbility(const GoodArray<Character*>&);
 };
 
 
@@ -165,7 +151,8 @@ class Arco : public PassiveAbility{
 
         static std::string getName() const;
 
-        virtual short int useAbility(Character * target);
+        virtual short int useAbility(const GoodArray<Character*>&);
+
 };
 
 class Balestra: public PassiveAbility{
@@ -177,26 +164,27 @@ class Balestra: public PassiveAbility{
 
         static std::string getName() const;
 
-        virtual short int useAbility(Character * target);
+        virtual short int useAbility(const GoodArray<Character*>&);
+
 };
 
-class Martello : public PassiveActiveM{
+class Martello : public PassiveActive{
     private:
         short int bonusDmg;
     public:
         Martello(short int = 0);
         short int getBonusDmg() const;
 
-        virtual short useAbility(Character *);
+        virtual short int useAbility(const GoodArray<Character*>&);
 };
 
 // Infliggi più danni e una volta per turno puoi sferrare un colpo
 //  ad area che infligge tutti i target vicini.
-class Axe : public PassiveActiveM{
+class Axe : public PassiveActive{
     private:
         int bonusDamage;
     public:
-        virtual short useAbility(Character *);
+        virtual short int useAbility(const GoodArray<Character*>&);
 };
 
 
@@ -213,7 +201,7 @@ class Bastone : public PassiveAbility{
         // Incanta le proprie abilità dando un modificatore bonus
         // di danni sulle spell che infiglggonod danni. Target è self.
         // Avremo campo "danniBonusLancio".
-        virtual short int useAbility(Character *);
+        virtual short int useAbility(const GoodArray<Character*>&);
 
 };
 
@@ -232,33 +220,33 @@ class LifeSteal : public PassiveAbility {
     public:
         LifeSteal();
         static std::string getName();
-        virtual short int useAbility(Character * target);
+        virtual short int useAbility(const GoodArray<Character*>&);
 };
 
 /* Target is feared and won't perform action the coming turn */
-class GhostTouch : public SingleTarget {
+class GhostTouch : public ActiveAbility {
     public:
         GhostTouch();
-        virtual short int useAbility(Character * target);
+        virtual short int useAbility(const GoodArray<Character*>&);
 };
 
 /* Taunts all targets in a seen cell. */
-class Taunt : public MultiTarget {
+class Taunt : public ActiveAbility {
     public:
         Taunt();
-        virtual short int useAbility(Character * target);
+        virtual short int useAbility(const GoodArray<Character*>&);
 };
 
 /* Moves all enemies to a next cell. */
-class Push : public MultiTarget {
+class Push : public ActiveAbility {
     public:
         Push(short int = -1, short int = 0, short int = 0, short int = 0);
-        virtual short int useAbility(Character * target);
+        virtual short int useAbility(const GoodArray<Character*>&);
 };
 
 
 /* Heals ally target. (potremmo fare che puo curare chiunque) */
-class Heal: public SingleTarget{
+class Heal: public ActiveAbility{
     private:
         short int heal;
     public:
@@ -266,8 +254,8 @@ class Heal: public SingleTarget{
 
         // virtual bool canThrow();
 
-        virtual short int useAbility(Character * target);
-        static bool checkAlly(PC * target);
+        virtual short int useAbility(const GoodArray<Character*>&);
+        static bool checkAlly(Character * target);
 };
 
 

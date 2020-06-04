@@ -145,7 +145,7 @@ class Character : public AnimateObject {
      *  - i campi dati sono pubblici (super bad practice)
      *  - la classe Effect è friend di questa classe (bad practice)
      *
-     * Un altro aspetto da considerare è rendere disponibile un
+     *  Un altro aspetto da considerare è rendere disponibile un
      *  lifetime: "quanti turni sono passati da..."
      */
 
@@ -156,16 +156,25 @@ class Character : public AnimateObject {
      */
     virtual void dealDamageOrHeal(short);
 protected:
+    /* Si modificano solo a level up  o altre condizioni */
     ushort _maxHp;
     ushort _currentHp;
 
-    ushort _baseStrength;
+    ushort _gittataBonus;
+    /*   Si altera nel tempo    */
 
+
+    /*
+        azioni disponibili
+        la vita bonus del turno (armatura)
+        danni bonus dall'arma
+    */
+
+    ushort _baseStrength;
 
 public:
 
     Character(Mappa *, ushort, ushort, ushort, ushort, ushort);
-
     // in sola lettura
     virtual ushort getMaxHp() const;
 
@@ -176,9 +185,9 @@ public:
     virtual bool isDead() const;
 
     // interazione con altri
-    virtual void dealDamage(ushort);
+    virtual void takeDamage(ushort);
 
-    virtual void dealHeal(ushort);
+    virtual void takeHeal(ushort);
 
     virtual void basicAttack(Character*) const;
 

@@ -4,15 +4,28 @@
 #endif // ARRAY_H
 
 
+/*
+    Rifare bene: Iteratori e ConstIteratori.
+    Libro ranzi.
+
+
+    Manca:
+
+        erase()
+        clear()
+        push_front()
+        pop_front()
+*/
+
 
 template<typename T = int>
 class GoodArray{
     public:
-        typedef unsigned short size_type;
+        typedef short size_type;
         typedef T value_type;
 
     private:
-        T * item;
+        value_type * item;
 
         size_type _size;
         size_type _capacity;
@@ -24,8 +37,8 @@ class GoodArray{
                 friend class GoodArray<T>;
                 // Privato perchè non devi poter creare iteatori al di fuori
                 // di goodArray.
-                T* elem;
-                ConstIterator(T*);
+                value_type* elem;
+                ConstIterator(value_type*);
             public:
 
                 ConstIterator();
@@ -36,8 +49,8 @@ class GoodArray{
                 bool operator!=(const ConstIterator &) const;
 
                 // Operatori di dereferenzazione
-                const T& operator*() const;
-                const T* operator->() const;
+                const value_type& operator*() const;
+                const value_type* operator->() const;
 
 
                 // Muoversi nel constiterator.
@@ -46,6 +59,11 @@ class GoodArray{
 
                 ConstIterator& operator--();
                 ConstIterator& operator--(int);
+
+                ConstIterator& operator+=(const size_type&);
+                ConstIterator& operator-=(const size_type&);
+
+                value_type& operator[](const size_type &);
         };
 
         // Iteratore utilizzabile
@@ -53,8 +71,8 @@ class GoodArray{
             private:
                 friend class GoodArray<T>;
                 // Costruttore privato.
-                T* elem;
-                Iterator(T*);
+                value_type* elem;
+                Iterator(value_type*);
 
             public:
                 Iterator(); // Costruisce l'iteratore vuoto.
@@ -62,8 +80,8 @@ class GoodArray{
                 bool operator==(const Iterator&) const;
                 bool operator!=(const Iterator&) const;
 
-                T& operator*() const;
-                T* operator->() const;
+                value_type& operator*() const;
+                value_type* operator->() const;
 
                 Iterator& operator++();
                 Iterator operator++(int);
@@ -71,23 +89,28 @@ class GoodArray{
                 Iterator& operator--();
                 Iterator operator--(int);
 
+                Iterator& operator+=(const size_type &);
+                Iterator& operator-=(const size_type&);
+
+                value_type& operator[](const size_type &);
+
         };
 
         GoodArray(size_type = 0);
 
         // Crea lista con size_type quantità di copie di T.
-        GoodArray(size_type, T);
+        GoodArray(size_type, value_type);
         // Duplica un goodArray.
-        GoodArray(const GoodArray<T> &);
+        GoodArray(const GoodArray<value_type> &);
         // Assegnazione profonda di due array.
-        GoodArray<T>& operator=(const GoodArray<T> &);
+        GoodArray<value_type>& operator=(const GoodArray<value_type> &);
 
 
         ~GoodArray();
     // ---- Metodi in O(1) --- //
 
     // Operatore di accesso casuale. Restituisce elemento T.
-       T &operator[](const int&) const;
+        value_type &operator[](const int&) const;
 
 
         void push_back(const T& val);
@@ -173,6 +196,22 @@ typename GoodArray<T>::ConstIterator& GoodArray<T>::ConstIterator::operator--(in
     return *this;
 }
 
+template <typename T>
+typename GoodArray<T>::ConstIterator& GoodArray<T>::ConstIterator::operator+=(const size_type& offset){
+    elem = elem + offset;
+    return *this;
+}
+template <typename T>
+typename GoodArray<T>::ConstIterator& GoodArray<T>::ConstIterator::operator-=(const size_type& offset){
+    elem = elem - offset;
+    return *this;
+}
+
+
+template <typename T>
+T& GoodArray<T>::ConstIterator::operator[](const size_type& offset){
+     return elem[offset];
+}
 
 
 // Metodi e funzioni di Iterator.
@@ -229,6 +268,26 @@ typename GoodArray<T>::Iterator GoodArray<T>::Iterator::operator--(int offset){
      if(elem) -- elem;
      return *this;
 }
+
+template <typename T>
+typename GoodArray<T>::Iterator& GoodArray<T>::Iterator::operator+=(const size_type& offset){
+    elem = elem + offset;
+    return *this;
+}
+
+template <typename T>
+typename GoodArray<T>::Iterator& GoodArray<T>::Iterator::operator-=(const size_type& offset){
+    elem = elem - offset;
+    return *this;
+}
+
+
+
+template <typename T>
+T& GoodArray<T>::Iterator::operator[](const size_type& offset){
+     return elem[offset];
+}
+
 
 
 
