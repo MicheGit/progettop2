@@ -23,7 +23,7 @@ Casella *& Mappa::getCasella(size_type x, size_type y) const {
     return _map[x + y * _width];
 }
 
-tupla<ushort, tupla<ushort, Casella *> *> Mappa::dijkstra(ushort start, ushort limit) const {
+dijkstra_table Mappa::dijkstra(ushort start, ushort limit) const {
 
 
     // init
@@ -48,14 +48,15 @@ tupla<ushort, tupla<ushort, Casella *> *> Mappa::dijkstra(ushort start, ushort l
         nodes_number += 4 * i;
     }
 
-    short node_indexes[nodes_number];
+    GoodArray<short> node_indexes(nodes_number);
+    // short node_indexes[nodes_number];
     short max_index = start_x + (start_y + limit) * _width;
     ushort count = 0;
     while (max_index >= _width * _height) {
         max_index = start_x + count + (start_y + limit - count) * _width;
         count++;
     }
-    short node_indexes_indexes[max_index + 1];
+    GoodArray<short> node_indexes_indexes(max_index + 1);
     for (int i = 0; i <= max_index; ++i) {
         node_indexes_indexes[i] = -1;
     }
@@ -156,15 +157,17 @@ tupla<ushort, tupla<ushort, Casella *> *> Mappa::dijkstra(ushort start, ushort l
     // node_indexes contiene in maniera ordinata per l'algoritmo di dijkstra gli indici dei nodi
     // per i nodi out of bound metto indice start: quello non verrà ricontrollato
 
-    tupla<ushort, Casella *> defaultTuple(limit + 1, nullptr);
+    dijkstra_node defaultNode(limit + 1, nullptr);
+    // tupla<ushort, Casella *> defaultTuple(limit + 1, nullptr);
 
-    auto memory = new tupla<ushort, Casella *>[nodes_number];
+    GoodArray<dijkstra_node> memory(nodes_number);
+    // auto memory = new tupla<ushort, Casella *>[nodes_number];
 
     for (int i = 0; i < nodes_number; ++i) {
-        memory[i] = defaultTuple;
+        memory[i] = defaultNode;
     }
 
-    memory[0] = tupla<ushort, Casella *>(0, nullptr); // start
+    memory[0] = {0, nullptr}; // start
 
     // end init
 
@@ -181,7 +184,6 @@ tupla<ushort, tupla<ushort, Casella *> *> Mappa::dijkstra(ushort start, ushort l
             }
 
             // arco per arco
-            // sóta la sènder brasca l'è la rassa bèrgamàsca
 
 
             short index_of_left = node_indexes[j] - 1;
@@ -196,13 +198,13 @@ tupla<ushort, tupla<ushort, Casella *> *> Mappa::dijkstra(ushort start, ushort l
                 // puoi uscire dalla casella a sinistra e entrare in questa
 
                 ushort costo_minimo =
-                        memory[node_indexes_indexes[index_of_left]].first // costo per arrivare a sx
+                        memory[node_indexes_indexes[index_of_left]].costo // costo per arrivare a sx
                         + _map[index_of_left]->getCostoUscita() // costo per entrare qui
                         + _map[node_indexes[j]]->getCostoEntrata(); // costo per uscire da sx
 
-                if (memory[j].first > costo_minimo) {
-                    memory[j].first = costo_minimo;
-                    memory[j].second = _map[node_indexes[j]]; // il nodo a sinistra
+                if (memory[j].costo > costo_minimo) {
+                    memory[j].costo = costo_minimo;
+                    memory[j].provenienza = _map[index_of_left]; // il nodo a sinistra
                 }
 
             }
@@ -218,13 +220,13 @@ tupla<ushort, tupla<ushort, Casella *> *> Mappa::dijkstra(ushort start, ushort l
                 // node_indexes[j] non è sul lato destro
 
                 ushort costo_minimo =
-                        memory[node_indexes_indexes[index_of_right]].first // costo per arrivare a sx
+                        memory[node_indexes_indexes[index_of_right]].costo // costo per arrivare a sx
                         + _map[index_of_right]->getCostoUscita() // costo per entrare qui
                         + _map[node_indexes[j]]->getCostoEntrata(); // costo per uscire da sx
 
-                if (memory[j].first > costo_minimo) {
-                    memory[j].first = costo_minimo;
-                    memory[j].second = _map[node_indexes[j]]; // il nodo a sinistra
+                if (memory[j].costo > costo_minimo) {
+                    memory[j].costo = costo_minimo;
+                    memory[j].provenienza = _map[index_of_right]; // il nodo a destra
                 }
 
             }
@@ -240,13 +242,13 @@ tupla<ushort, tupla<ushort, Casella *> *> Mappa::dijkstra(ushort start, ushort l
                 // node_indexes[j] non è sulla prima riga
 
                 ushort costo_minimo =
-                        memory[node_indexes_indexes[index_of_above]].first // costo per arrivare a sx
+                        memory[node_indexes_indexes[index_of_above]].costo // costo per arrivare a sx
                         + _map[node_indexes[node_indexes_indexes[index_of_above]]]->getCostoUscita() // costo per entrare qui
                         + _map[node_indexes[j]]->getCostoEntrata(); // costo per uscire da sx
 
-                if (memory[j].first > costo_minimo) {
-                    memory[j].first = costo_minimo;
-                    memory[j].second = _map[node_indexes[j]]; // il nodo a sinistra
+                if (memory[j].costo > costo_minimo) {
+                    memory[j].costo = costo_minimo;
+                    memory[j].provenienza = _map[index_of_above]; // il nodo sopra
                 }
 
             }
@@ -260,38 +262,40 @@ tupla<ushort, tupla<ushort, Casella *> *> Mappa::dijkstra(ushort start, ushort l
                 // index of under è un indice valido
                 // node_indexes[j] non è sull'ultima riga
 
-                if (node_indexes[j] == 4) {
-                    int breakpoint = 9;
-                }
-
                 ushort costo_minimo =
-                        memory[node_indexes_indexes[index_of_under]].first // costo per arrivare a sx
+                        memory[node_indexes_indexes[index_of_under]].costo // costo per arrivare a sx
                         + _map[index_of_under]->getCostoUscita() // costo per entrare qui
                         + _map[node_indexes[j]]->getCostoEntrata(); // costo per uscire da sx
 
-                if (memory[j].first > costo_minimo) {
-                    memory[j].first = costo_minimo;
-                    memory[j].second = _map[node_indexes[j]]; // il nodo a sinistra
+                if (memory[j].costo > costo_minimo) {
+                    memory[j].costo = costo_minimo;
+                    memory[j].provenienza = _map[index_of_under]; // il nodo a sinistra
                 }
 
             }
         }
     }
 
-    return {nodes_number, memory};
+    return {node_indexes, memory, node_indexes_indexes};
 
 }
 
-tupla<ushort, tupla<ushort, Casella *> *> Mappa::dijkstra(Casella * start, ushort limit) const {
+dijkstra_table Mappa::dijkstra(Casella * start, ushort limit) const {
+    return dijkstra(getIndexFromCasella(start), limit);
+}
+
+ushort Mappa::getIndexFromCasella(Casella * casella) const {
     ushort i = 0;
-    while (_map[i] != start) {
+    while (_map[i] != casella) {
         ++i;
         if (i >= _width * _height) {
             // TODO error
+            break;
         }
     }
-    return dijkstra(i, limit);
+    return i;
 }
+
 
 tupla<ushort, Casella *> * Mappa::test_init_dijkstra(std::stringstream & log, ushort start, ushort limit) const {
 
@@ -563,3 +567,9 @@ tupla<ushort, Casella *> * Mappa::test_init_dijkstra(std::stringstream & log, us
     return memory;
 }
 
+tupla<ushort, ushort> Mappa::getXandYfromCasella(Casella* casella) const {
+    ushort index = getIndexFromCasella(casella);
+    ushort x = index % _width;
+    ushort y = index / _width;
+    return {x, y};
+}

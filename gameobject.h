@@ -3,13 +3,17 @@
 
 #include "casella.h"
 #include "mappa.h"
-
-class Skill;
-
-typedef unsigned short ushort;
+#include "array.h"
+#include "abilitaclassi.h"
+#include "custom_types.h"
 
 class GameObject {
 protected:
+    /**
+     * TODO studiare protected o private qui
+     *  un'alternativa sarebbe mettere come modalità di eredità protected su
+     *  AnimatedObject
+     */
     Mappa * _map;
     Casella * _position;
     Casella::Ticket _ticket;
@@ -53,7 +57,6 @@ public:
 };
 
 class AnimateObject : public GameObject {
-protected:
     /**
      * Massimo numero di azioni per turno
      */
@@ -66,8 +69,7 @@ public:
     /**
      * costruttore di base
      *
-     * @param map: Mappa * ,
-     * @
+     * @param map: Mappa * , x: ushort, y: ushort, actions: ushort
      * @param actions: unsigned short numero di azioni
      */
     AnimateObject(Mappa *, ushort, ushort, ushort);
@@ -104,6 +106,13 @@ public:
     ushort getCurrentActions() const;
 
     /**
+     * spendActions
+     *
+     * spende un un numero di azioni
+     */
+    bool spendActions(ushort);
+
+    /**
      * resetTurn
      *
      * resetta le statistiche correnti al valore che devono avere dopo ogni turno
@@ -122,7 +131,7 @@ public:
      *
      * @return l'ultima riga dell'algoritmo di Dijkstra, con le caselle e i cammini minimi correlati.
      */
-    virtual tupla<ushort, tupla<ushort, Casella *>*> getCaselleRaggiungibili() const;
+    virtual dijkstra_table getCaselleRaggiungibili() const;
 
     /**
      * Ogni classe figlia di AnimatedObject implementa un modo diverso di muoversi.
@@ -131,66 +140,165 @@ public:
      *
      * @return
      */
-    virtual void goToTarget(LinkedList<Casella*>&) const = 0;
+    virtual void goToTarget(const LinkedList<Casella*>&) = 0;
 };
 
 class Character : public AnimateObject {
 
-    friend class Effect;
-    /**
-     * TODO
-     * A scopo di modificare e applicare effetti che influenzano
-     * le statistiche di base dei personaggi ci sono due vie:
-     *
-     *  - i campi dati sono pubblici (super bad practice)
-     *  - la classe Effect è friend di questa classe (bad practice)
-     *
-     *  Un altro aspetto da considerare è rendere disponibile un
-     *  lifetime: "quanti turni sono passati da..."
-     */
+    // Si modificano solo a level up  o altre condizioni
+    // base
+    ushort _maxHp;
+    ushort _baseStrength;
+    ushort _baseRange;
+
+    // bonus
+    ushort _currentHp;
+    ushort _shield;
+
+    short _bonusStrength;
+    short _bonusRange;
 
     /**
      * @param modifier: short
      *  se short > 0 -> heal
      *  se short < 0 -> damage
      */
-    virtual void dealDamageOrHeal(short);
-protected:
-    /* Si modificano solo a level up  o altre condizioni */
-    ushort _maxHp;
-    ushort _currentHp;
-
-    ushort _gittataBonus;
-    /*   Si altera nel tempo    */
-
-
-    /*
-        azioni disponibili
-        la vita bonus del turno (armatura)
-        danni bonus dall'arma
-    */
-
-    ushort _baseStrength;
+    virtual void takeDamageOrHeal(short);
 
 public:
 
-    Character(Mappa *, ushort, ushort, ushort, ushort, ushort);
-    // in sola lettura
+    Character(Mappa *, ushort, ushort, ushort, ushort, ushort, ushort);
+    // totali in lettura, per visualizzazione
     virtual ushort getMaxHp() const;
 
     virtual ushort getCurrentHp() const;
 
+    virtual ushort getShield() const;
+
     virtual ushort getStrength() const;
+
+    virtual ushort getRange() const;
 
     virtual bool isDead() const;
 
-    // interazione con altri
+    // bonus in scrittura
+
     virtual void takeDamage(ushort);
 
     virtual void takeHeal(ushort);
 
-    virtual void basicAttack(Character*) const;
+    virtual void addShield(ushort);
 
+    virtual void addBonusStrength(short);
+
+    virtual void addBonusRange(short);
+
+    // interazione con altri
+    virtual void basicAttack(Character*);
+
+    // reset turno
+    void resetTurn();
+
+};
+
+class Player : public Character {
+    static const ushort _player_base_actions = 3;
+    static const ushort _player_base_health = 5;
+    static const ushort _player_base_strength = 1;
+    static const ushort _player_base_range = 0;
+    static const ushort _player_exp_per_level = 10;
+
+    ushort _bonusMagicDamage;
+    ushort _expPoints;
+
+    GoodArray<BaseAbility*> _skillset;
+public:
+    Player(Mappa *, ushort, ushort);
+
+    void addBonusMagicDamage(short);
+
+    ushort getBonusMagicDamage() const;
+
+    void goToTarget(const LinkedList<Casella*>&);
+
+    // time purpose
+    // void startTurn(); // TODO
+
+    void resetTurn();
+
+    // exp
+    void gainExpPoints(ushort);
+
+    ushort getLevel() const;
+
+    // abilities
+    void addAbility(BaseAbility*);
+
+    // TODO get all abilities
+
+};
+
+class Monster : public Character {
+public:
+    Monster(Mappa *, ushort, ushort, ushort, ushort, ushort, ushort);
+
+
+    dijkstra_table getCaselleRaggiungibili() const;
+
+    void goToTarget(const LinkedList<Casella *>&);
+
+    virtual void selectCasellaAndMove();
+
+    virtual void doActions() = 0;
+
+};
+
+class Zombie : public Monster {
+    static const ushort _zombie_base_hp = 3;
+    static const ushort _zombie_base_strength = 1;
+    static const ushort _zombie_base_range = 0;
+    static const ushort _zombie_base_actions = 2;
+
+public:
+    Zombie(Mappa *, ushort, ushort);
+
+    void doActions();
+
+    void resetTurn();
+};
+
+class Ghost : public Monster {
+    static const ushort _ghost_base_hp = 1;
+    static const ushort _ghost_base_strength = 1;
+    static const ushort _ghost_base_range = 0;
+    static const ushort _ghost_base_actions = 4;
+
+public:
+    Ghost(Mappa *, ushort, ushort);
+
+    void doActions();
+
+    void takeDamage(ushort);
+};
+
+/**
+ * Necromante come figlio di
+ *  Player e Zombie?
+ */
+
+class SpawnPoint : public GameObject {
+    ushort _capacity;
+public:
+    enum Monsters{
+        ZOMBIE,
+        GHOST
+    };
+
+    SpawnPoint(Mappa *, ushort, ushort, ushort);
+
+    Monster * spawn(Monsters) const;
+
+    Casella::Ticket move(Casella*);
 };
 
 #endif // GAMEOBJECT_H
