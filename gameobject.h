@@ -7,6 +7,21 @@
 #include "abilitaclassi.h"
 #include "custom_types.h"
 
+class GameObjectError : public Error {
+public:
+    enum ErrorCode {
+        UNDEFINED,
+        NULL_POSITION,
+        UNREACHABLE_DESTINATION,
+    };
+private:
+    static const char * codeToString(ErrorCode);
+
+public:
+    GameObjectError(ErrorCode);
+    GameObjectError(const char*);
+};
+
 class GameObject {
 protected:
     /**

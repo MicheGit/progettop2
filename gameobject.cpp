@@ -331,4 +331,13 @@ Casella::Ticket SpawnPoint::move(Casella * target) {
     _ticket = _position->push_front(this);
 }
 
-
+const char* GameObjectError::codeToString(GameObjectError::ErrorCode code) {
+    switch (code) {
+        case NULL_POSITION:
+            return "GameObjectError: tentativo di inserimento in casella nulla.";
+        case UNREACHABLE_DESTINATION:
+            return "GameObjectError: la destinazione selezionata non è raggiungibile.";
+        default:
+            return "GameObjectError: Errore non specificato.";
+    }
+}

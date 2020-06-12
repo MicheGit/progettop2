@@ -2,6 +2,8 @@
 // Created by chrim on 14/04/2020.
 //
 
+#include "error.h"
+
 #ifndef ZOMBIEDUNGEON_LINKEDLIST_H
 #define ZOMBIEDUNGEON_LINKEDLIST_H
 
@@ -17,6 +19,22 @@
  * has the same cv-qualification as or less cv-qualification than the class type in the return type of B::f.
  *
  */
+
+class LinkedListError : public Error {
+public:
+    enum ErrorCode {
+        UNDEFINED,
+        INVALID_ITERATOR_USAGE,
+        PAST_THE_END_REFERENCE,
+        PAST_THE_END_ERASE
+    };
+private:
+    static const char * codeToString(ErrorCode);
+public:
+
+    LinkedListError(ErrorCode);
+    LinkedListError(const char*);
+};
 
 
 /***
@@ -38,6 +56,7 @@ class LinkedList {
 public:
     typedef unsigned short size_type;
     typedef T value_type;
+
 private:
 
     /***
@@ -422,62 +441,67 @@ bool LinkedList<T>::ConstIterator::operator!=(const ConstIterator & other) const
 
 template <typename T>
 const T & LinkedList<T>::ConstIterator::operator*() const {
-    // TODO error
 
-    /* TODO
     if (_node->next == _node) {
-        throw new Error();
+        throw LinkedListError(LinkedListError::PAST_THE_END_REFERENCE);
+    } else if (! _node) {
+        throw LinkedListError(LinkedListError::INVALID_ITERATOR_USAGE);
     }
-    */
+
     return *_node->info;
 }
 
 template <typename T>
 const T * LinkedList<T>::ConstIterator::operator->() const {
-    // TODO error
 
-    /* TODO
     if (_node->next == _node) {
-        throw new Error();
+        throw LinkedListError(LinkedListError::PAST_THE_END_REFERENCE);
+    } else if (! _node) {
+        throw LinkedListError(LinkedListError::INVALID_ITERATOR_USAGE);
     }
-    */
+
     return _node->info;
 }
 
 template <typename T>
 typename LinkedList<T>::ConstIterator& LinkedList<T>::ConstIterator::operator++() {
-    // TODO error se invalid
+
     if (_node) {
         _node = _node->next;
+    } else {
+        throw LinkedListError(LinkedListError::INVALID_ITERATOR_USAGE);
     }
     return *this;
 }
 
 template <typename T>
 typename LinkedList<T>::ConstIterator LinkedList<T>::ConstIterator::operator++(int) {
-    // TODO error se invalid
     Node* aux = _node;
     if (_node) {
         _node = _node->next;
+    } else {
+        throw LinkedListError(LinkedListError::INVALID_ITERATOR_USAGE);
     }
     return ConstIterator(aux);
 }
 
 template <typename T>
 typename LinkedList<T>::ConstIterator& LinkedList<T>::ConstIterator::operator--() {
-    // TODO error se invalid
     if (_node) {
         _node = _node->prev;
+    } else {
+        throw LinkedListError(LinkedListError::INVALID_ITERATOR_USAGE);
     }
     return *this;
 }
 
 template <typename T>
 typename LinkedList<T>::ConstIterator LinkedList<T>::ConstIterator::operator--(int) {
-    // TODO error se invalid
     Node* aux = _node;
     if (_node) {
         _node = _node->prev;
+    } else {
+        throw LinkedListError(LinkedListError::INVALID_ITERATOR_USAGE);
     }
     return ConstIterator(aux);
 }
@@ -492,13 +516,21 @@ LinkedList<T>::Iterator::Iterator()
 
 template <typename T>
 T& LinkedList<T>::Iterator::operator*() const {
-    // TODO error
+    if (_node->next == _node) {
+        throw LinkedListError(LinkedListError::PAST_THE_END_REFERENCE);
+    } else if (! _node) {
+        throw LinkedListError(LinkedListError::INVALID_ITERATOR_USAGE);
+    }
     return *_node->info;
 }
 
 template <typename T>
 T * LinkedList<T>::Iterator::operator->() const {
-    // TODO error
+    if (_node->next == _node) {
+        throw LinkedListError(LinkedListError::PAST_THE_END_REFERENCE);
+    } else if (! _node) {
+        throw LinkedListError(LinkedListError::INVALID_ITERATOR_USAGE);
+    }
     return _node->info;
 }
 
@@ -506,7 +538,9 @@ template <typename T>
 typename LinkedList<T>::Iterator& LinkedList<T>::Iterator::operator++() {
     if (_node) {
         _node = _node->next;
-    } // TODO error
+    } else {
+        throw LinkedListError(LinkedListError::INVALID_ITERATOR_USAGE);
+    }
     return *this;
 }
 
@@ -515,7 +549,9 @@ typename LinkedList<T>::Iterator LinkedList<T>::Iterator::operator++(int) {
     Iterator prev(*this);
     if (_node) {
         _node = _node->next;
-    } // TODO error
+    } else {
+        throw LinkedListError(LinkedListError::INVALID_ITERATOR_USAGE);
+    }
     return prev;
 }
 
@@ -523,7 +559,9 @@ template <typename T>
 typename LinkedList<T>::Iterator& LinkedList<T>::Iterator::operator--() {
     if (_node) {
         _node = _node->prev;
-    } // TODO error
+    } else {
+        throw LinkedListError(LinkedListError::INVALID_ITERATOR_USAGE);
+    }
     return *this;
 }
 
@@ -532,7 +570,9 @@ typename LinkedList<T>::Iterator LinkedList<T>::Iterator::operator--(int) {
     Iterator aux(*this);
     if (_node) {
         _node = _node->prev;
-    } // TODO error
+    } else {
+        throw LinkedListError(LinkedListError::INVALID_ITERATOR_USAGE);
+    }
     return aux;
 }
 
@@ -615,8 +655,7 @@ typename LinkedList<T>::Iterator LinkedList<T>::insert(Iterator it, T element) {
         _size++;
         return Iterator(nodo);
     } else {
-        // TODO error
-        return Iterator();
+        throw LinkedListError(LinkedListError::INVALID_ITERATOR_USAGE);
     }
 }
 
@@ -640,8 +679,7 @@ typename LinkedList<T>::Iterator LinkedList<T>::push_front(T element) {
 template <typename T>
 typename LinkedList<T>::Iterator LinkedList<T>::erase(Iterator it) {
     if (it._node == _pastTheEnd) {
-        // TODO error
-        return Iterator();
+        throw LinkedListError(LinkedListError::PAST_THE_END_ERASE);
     }
     if (it._node) {
         it._node->next->prev = it._node->prev;
@@ -658,8 +696,7 @@ typename LinkedList<T>::Iterator LinkedList<T>::erase(Iterator it) {
         _size--;
         return Iterator(aux);
     } else {
-        // TODO error
-        return Iterator();
+        throw LinkedListError(LinkedListError::INVALID_ITERATOR_USAGE);
     }
 }
 
@@ -672,8 +709,7 @@ typename LinkedList<T>::Iterator LinkedList<T>::erase(LinkedList<T>::Iterator it
         ++aux;
     }
     if (aux == end()) {
-        // TODO error
-        return Iterator();
+        throw LinkedListError(LinkedListError::PAST_THE_END_ERASE);
     }
     for (int i = 0; i < count; i++) {
         it1 = erase(it1);
@@ -722,7 +758,9 @@ typename LinkedList<T>::ConstIterator LinkedList<T>::end() const {
     return _pastTheEnd;
 }
 
-// TEMPO 4h (0.5 prog., 2 cod., 1.5 test e corr.)
+
+
+// TEMPO 5h (0.5 prog., 1 cod., 1.5 test e corr.)
 
 #endif //ZOMBIEDUNGEON_LINKEDLIST_H
 
